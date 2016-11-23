@@ -53,6 +53,8 @@ create table messages
 	messageId int(10) NOT NULL AUTO_INCREMENT,
 	userId int(10) NOT NULL,
 	groupId int(10) NOT NULL,
+	commentTo int(10), -- messageId повідомлення, до якого дане повідомлення є коментарем.
+	                   -- null — повідомлення не є коментарем
 	title varchar(100),
 	content text,
 	created datetime,
