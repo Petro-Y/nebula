@@ -18,6 +18,28 @@ create table files
 	path varchar(256), --шлях до завантаженого файла на веб-сервері
 	primary key fileId
 	);
+create table userActivity
+	(
+	userId int(10) NOT NULL,
+	lastIP varchar(15), -- якщо IPv6, треба буде збільшити
+	lastLoIn datetime,
+	lastActivity datetime,
+	primary key(userId)	
+	)
+create table userBan
+	(
+	userId int(10) not null,
+	expires datetime, -- час автоматичного припинення бану. Якщо null — пермабан
+	reason varchar(256),
+	adminUserId int(10)	
+	)
+create table ipBan
+	(
+	ip varchar(15), -- Також слід передбачити бан діапазонів IP....
+	expires datetime, -- час автоматичного припинення бану. Якщо null — пермабан
+	reason varchar(256),
+	adminUserId int(10)	
+	)
 	
 create table groups
 	(
