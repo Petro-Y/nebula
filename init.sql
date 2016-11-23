@@ -8,8 +8,8 @@ create table users --основні дані користувача
 	);
 create table userFeatures --додаткові дані користувача
 	(
-	userId int(10) NOT NULL,
-	avatarFileId int(10),
+	userId int(10) NOT NULL references users(userId),
+	avatarFileId int(10) references files(fileId),
 	primary key(userId)
 	);
 create table files
@@ -20,7 +20,7 @@ create table files
 	);
 create table userActivity
 	(
-	userId int(10) NOT NULL,
+	userId int(10) NOT NULL references users(userId),
 	lastIP varchar(15), -- якщо IPv6, треба буде збільшити
 	lastLoIn datetime,
 	lastActivity datetime,
@@ -28,17 +28,17 @@ create table userActivity
 	)
 create table userBan
 	(
-	userId int(10) not null,
+	userId int(10) not null references users(userId),
 	expires datetime, -- час автоматичного припинення бану. Якщо null — пермабан
 	reason varchar(256),
-	adminUserId int(10)	
+	adminUserId int(10) references users(userId)	
 	)
 create table ipBan
 	(
 	ip varchar(15), -- Також слід передбачити бан діапазонів IP....
 	expires datetime, -- час автоматичного припинення бану. Якщо null — пермабан
 	reason varchar(256),
-	adminUserId int(10)	
+	adminUserId int(10) references users(userId)	
 	)
 	
 create table groups
@@ -51,28 +51,29 @@ create table groups
 create table messages
 	(
 	messageId int(10) NOT NULL AUTO_INCREMENT,
-	userId int(10) NOT NULL,
-	groupId int(10) NOT NULL,
-	commentTo int(10), -- messageId повідомлення, до якого дане повідомлення є коментарем.
-	                   -- null — повідомлення не є коментарем
+	userId int(10) NOT NULL references users(userId),
+	groupId int(10) NOT NULL references groups(groupId),
+	commentTo int(10) references messages(messageId),
+	       -- messageId повідомлення, до якого дане повідомлення є коментарем.
+	       -- null — повідомлення не є коментарем
+	created datetime,
 	title varchar(100),
 	content text,
-	created datetime,
 	primary key(messageId)
-	); --зв'язок з групами?.....
+	);
 create table reposts
 	(
 	repostId int(10) NOT NULL AUTO_INCREMENT,
-	userId int(10) NOT NULL, -- користувач, що робить репост
-	groupId int(10) NOT NULL, --група, в яку репоститься повідомлення
+	userId int(10) NOT NULL references users(userId), -- користувач, що робить репост
+	groupId int(10) NOT NULL references groups(groupId), --група, в яку репоститься повідомлення
 	reposted datetime,
-	messageId int(10) not null, -- ід. повідомлення, яке репоститься	
+	messageId int(10) not null references messages(messageId), -- ід. повідомлення, яке репоститься	
 	primary key(repostId)
 	); --зв'язок з групами?.....
 create table likes
 	(
-	messageId int(10) NOT NULL,
-	userId int(10) NOT NULL
+	messageId int(10) NOT NULL references messages(messageId), -- повідомлення, яке лайкають
+	userId int(10) NOT NULL references users(userId) -- користувач, який лайкає чиєсь повідомлення
 	);
 create table tags
 	(
@@ -82,11 +83,11 @@ create table tags
 	);
 create table messageTags
 	(
-	messageId int(10) not null,
-	tagId int(10) not null
+	messageId int(10) not null references messages(messageId),
+	tagId int(10) not null references tags(tagId)
 	);
 create table attachments
 	(
-	messageId int(10) not null,
-	fileId int(10) not null
+	messageId int(10) not null references messages(messageId),
+	fileId int(10) not null references files(fileId)
 	);
