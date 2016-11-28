@@ -14,7 +14,8 @@ create table userFeatures --додаткові дані користувача
 	(
 	userId integer NOT NULL references users(userId),
 	avatarFileId integer references files(fileId),
-	primary key(userId)
+	primary key(userId),
+	foreign key (avatarFileId) references files(fileId)
 	);
 create table userActivity
 	(
@@ -22,7 +23,8 @@ create table userActivity
 	lastIP varchar(15), -- якщо IPv6, треба буде збільшити
 	lastLogIn timestamp,
 	lastActivity timestamp,
-	primary key(userId)	
+	primary key(userId),
+	foreign key (userId) references users(userId)	
 	);
 create table userBan
 	(
@@ -30,7 +32,9 @@ create table userBan
 	userId integer not null references users(userId),
 	expires timestamp, -- час автоматичного припинення бану. Якщо null — пермабан
 	reason varchar(256),
-	adminUserId integer references users(userId)	
+	adminUserId integer references users(userId),
+	foreign key (userId) references users(userId),
+	foreign key (adminUserId) references users(userId)	
 	);
 create table ipBan
 	(
@@ -38,7 +42,8 @@ create table ipBan
 	ip varchar(15), -- Також слід передбачити бан діапазонів IP....
 	expires timestamp, -- час автоматичного припинення бану. Якщо null — пермабан
 	reason varchar(256),
-	adminUserId integer references users(userId)	
+	adminUserId integer references users(userId),
+	foreign key (adminUserId) references users(userId)	
 	);	
 create table groups
 	(
@@ -58,7 +63,10 @@ create table messages
 	created timestamp,
 	title varchar(100),
 	content text,
-	primary key(messageId)
+	primary key(messageId),
+	foreign key (userId) references users(userId),
+	foreign key (groupId) references groups(groupId),
+	foreign key (commentTo) references users(userId)
 	);
 create table reposts
 	(
@@ -67,12 +75,17 @@ create table reposts
 	groupId integer NOT NULL references groups(groupId), --група, в яку репоститься повідомлення
 	reposted timestamp,
 	messageId integer not null references messages(messageId), -- ід. повідомлення, яке репоститься	
-	primary key(repostId)
+	primary key(repostId),
+	foreign key (userId) references users(userId),
+	foreign key (groupId) references groups(groupId),
+	foreign key (messageId) references messages(messageId)
 	); --зв’язок з групами?.....
 create table likes
 	(
 	messageId integer NOT NULL references messages(messageId), -- повідомлення, яке лайкають
-	userId integer NOT NULL references users(userId) -- користувач, який лайкає чиєсь повідомлення
+	userId integer NOT NULL references users(userId), -- користувач, який лайкає чиєсь повідомлення
+	foreign key (userId) references users(userId),
+	foreign key (messageId) references messages(messageId)	
 	);
 create table tags
 	(
@@ -83,10 +96,14 @@ create table tags
 create table messageTags
 	(
 	messageId integer not null references messages(messageId),
-	tagId integer not null references tags(tagId)
+	tagId integer not null references tags(tagId),
+	foreign key (messageId) references messages(messageId),
+	foreign key (tagId) references tags(tagId)
 	);
 create table attachments
 	(
 	messageId integer not null references messages(messageId),
-	fileId integer not null references files(fileId)
+	fileId integer not null references files(fileId),
+	foreign key (messageId) references messages(messageId),
+	foreign key (fileId) references files(fileId)
 	);
