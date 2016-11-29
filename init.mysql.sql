@@ -93,6 +93,7 @@ create table tags
 	tagName varchar(50),
 	primary key(tagId)
 	);
+create index tags_tagName_index on tags(tagName);
 create table messageTags
 	(
 	messageId integer not null references messages(messageId),
