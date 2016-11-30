@@ -1,3 +1,10 @@
+ALTER DATABASE nebula SET default_text_search_config = 'pg_catalog.simple';
+-- Спрощений стемер, що не робить ніяких додаткових дій після парсера.
+-- Слід подумати про можливість створення пошукових конфігурацій для мов
+-- не зі стандартного списку (в який українська не входить).
+-- Схоже, доведеться писати власний стемер для української :(
+-- (і не тільки для неї).
+
 create table users --основні дані користувача
 	(	
 	userId serial primary key,
@@ -60,6 +67,9 @@ create table messages
 	content text,
 	primary key(messageId)
 	);
+create index messages_index on messages using gin(to_tsvector('simple', content));
+-- select * from messages where to_tsvector(content) @@ to_tsquery('слова слова слова');
+
 create table reposts
 	(
 	repostId serial,
