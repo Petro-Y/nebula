@@ -86,7 +86,8 @@ create table likes
 	messageId integer NOT NULL references messages(messageId), -- повідомлення, яке лайкають
 	userId integer NOT NULL references users(userId), -- користувач, який лайкає чиєсь повідомлення
 	foreign key (userId) references users(userId),
-	foreign key (messageId) references messages(messageId)	
+	foreign key (messageId) references messages(messageId),
+	primary key(messageId, userId)	
 	);
 create table tags
 	(
@@ -100,15 +101,18 @@ create table messageTags
 	messageId integer not null references messages(messageId),
 	tagId integer not null references tags(tagId),
 	foreign key (messageId) references messages(messageId),
-	foreign key (tagId) references tags(tagId)
+	foreign key (tagId) references tags(tagId),
+	primary key(messageId, tagId)
 	);
 create table attachments
 	(
 	messageId integer not null references messages(messageId),
 	fileId integer not null references files(fileId),
 	foreign key (messageId) references messages(messageId),
-	foreign key (fileId) references files(fileId)
+	foreign key (fileId) references files(fileId),
+	primary key(messageId, fileId)
 	);
+create index attachments_index on attachments(messageId);
 create table adminRights
 	(
 	userId integer NOT NULL references users(userId),
@@ -141,6 +145,7 @@ create table groupRights
 	-- Дається авторові групи; власник групи може додавати/видаляти інших власників.
 	-- Права доступу власника може змінювати лише інший власник.
 	foreign key (userId) references users(userId),
-	foreign key (groupId) references groups(groupId)
+	foreign key (groupId) references groups(groupId),
+	primary key(groupId, userId)
 	);
 -- :mode=mysql:
