@@ -137,8 +137,10 @@ create table groupRights
 	canRemove boolean default(false),
 	canEditRights boolean default(false), -- змінити іншому користувачеві права
 	-- (можна змінювати лише ті ж права, якими й сам модератор володіє)
-	isOwner boolean default(false) 
+	isOwner boolean default(false),
 	-- Дається авторові групи; власник групи може додавати/видаляти інших власників.
 	-- Права доступу власника може змінювати лише інший власник.
+	foreign key (userId) references users(userId),
+	foreign key (groupId) references groups(groupId)
 	);
 -- :mode=mysql:
