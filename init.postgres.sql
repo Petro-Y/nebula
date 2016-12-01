@@ -140,5 +140,17 @@ create table groupRights
 	-- Права доступу власника може змінювати лише інший власник.
 	primary key(groupId, userId)
 	);
-	
+create table emailNotifications
+	(
+	userId integer NOT NULL references users(userId) primary key,
+	onComment boolean default(false),
+	onRepost boolean default(false),
+	onRemove boolean default(false),
+	onBan boolean default(true)
+	);
+create table watchUsers
+	(
+	userId integer NOT NULL references users(userId), --користувач(1), що отримує сповіщення.
+	watchedUserId integer NOT NULL references users(userId) primary key --користувач(2), при публікації повідомлень якого користувачеві(1) надходять сповіщення на пошту
+	)
 -- :mode=pg-sql:
