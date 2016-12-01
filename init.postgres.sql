@@ -21,6 +21,7 @@ create table userFeatures --додаткові дані користувача
 	(
 	userId integer NOT NULL references users(userId),
 	avatarFileId integer references files(fileId),
+	aboutMe text,
 	primary key(userId)
 	);
 create table userActivity
@@ -101,3 +102,37 @@ create table attachments
 	messageId integer not null references messages(messageId),
 	fileId integer not null references files(fileId)
 	);
+create table adminRights
+	(
+	userId integer NOT NULL references users(userId),
+	isAdmin boolean default(false);
+	);
+create table groupRights
+	(
+	groupId integer NOT NULL references groups(groupId),
+	userId integer NOT NULL references users(userId),
+	-- замість справжнього користувача можуть також бути фіктивні:
+	-- ~added (користувач, щойно доданий до групи)
+	-- ~registered (будь-який зареєстрований користувач, не доданий до групи)
+	-- ~guest (незареєстрований користувач)
+	
+	-- основні права:
+	canRead boolean default(true), -- якщо false, решта прав стають недоступними.
+	canWriteMessage boolean default(true),
+	canComment boolean default(true),	
+	
+	canInvite boolean default(false), -- можливість приєднати до групи нових 
+	-- користувачів, яким після цього присвоюється рівень прав користувача ~added.
+	-- не можна запрошувати тих, хто вже був запрошений раніше.
+	
+	-- права модераторів:
+	canEditOthers boolean default(false), -- редагувати чужі повідомлення
+	canRemove boolean default(false),
+	canEditRights boolean default(false), -- змінити іншому користувачеві права
+	-- (можна змінювати лише ті ж права, якими й сам модератор володіє)
+	isOwner boolean default(false) 
+	-- Дається авторові групи; власник групи може додавати/видаляти інших власників.
+	-- Права доступу власника може змінювати лише інший власник.
+	);
+	
+-- :mode=pg-sql:
