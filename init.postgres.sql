@@ -83,7 +83,8 @@ create table reposts
 create table likes
 	(
 	messageId integer NOT NULL references messages(messageId), -- повідомлення, яке лайкають
-	userId integer NOT NULL references users(userId) -- користувач, який лайкає чиєсь повідомлення
+	userId integer NOT NULL references users(userId), -- користувач, який лайкає чиєсь повідомлення
+	primary key(messageId, userId)
 	);
 create table tags
 	(
@@ -95,17 +96,21 @@ create index tags_tagName_index on tags(tagName);
 create table messageTags
 	(
 	messageId integer not null references messages(messageId),
-	tagId integer not null references tags(tagId)
+	tagId integer not null references tags(tagId),
+	primary key(messageId, tagId)
 	);
 create table attachments
 	(
 	messageId integer not null references messages(messageId),
-	fileId integer not null references files(fileId)
+	fileId integer not null references files(fileId),
+	primary key(messageId, fileId)
 	);
+create index attachments_index on attachments(messageId);
 create table adminRights
 	(
 	userId integer NOT NULL references users(userId),
-	isAdmin boolean default(false);
+	isAdmin boolean default(false),
+	primary key(userId)
 	);
 create table groupRights
 	(
@@ -130,9 +135,10 @@ create table groupRights
 	canRemove boolean default(false),
 	canEditRights boolean default(false), -- змінити іншому користувачеві права
 	-- (можна змінювати лише ті ж права, якими й сам модератор володіє)
-	isOwner boolean default(false) 
+	isOwner boolean default(false),
 	-- Дається авторові групи; власник групи може додавати/видаляти інших власників.
 	-- Права доступу власника може змінювати лише інший власник.
+	primary key(groupId, userId)
 	);
 	
 -- :mode=pg-sql:
