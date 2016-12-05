@@ -3,13 +3,13 @@
 */
 var http = require("http");
 var pg = require("pg");
-var client = new pg.Client('postgres://postgres@localhost/nebula');
 
 http.createServer(function(request, response) 
 	{
 	response.writeHead(200, {"Content-Type": "text/html"});
 	response.write("<title>Світ, якого не було...</title>");
 	response.write("<p>Lorem ipsum dolor sit amet...</p>");
+	var client = new pg.Client('postgres://postgres@localhost/nebula');
 	//connect to db:	
 	client.on('drain', client.end.bind(client)); //disconnect client when all queries are finished
 	//show users....
@@ -18,33 +18,33 @@ http.createServer(function(request, response)
 		{
 		if (err){
 			console.log('err on connect!!!');
-			response.write('<br><br>err on connect!!!');
+			response.write('<br><hr>err on connect!!!');
 			throw err;
 			}
+			// disconnect the client
 		client.query('select username from users',[],//'SELECT $1::text as name', ['brianc'], 
 		function (err, result) 
 			{
 			if (err){
 				console.log('err on query!!!');
-				response.write('<br><br>err on query!!!');
+				response.write('<br><hr>err on query!!!');
 				response.end();
 				throw err;
 				}
-			
 			// just print the result to the console
-			s=JSON.stringify(result.rows[0]);
+			s='result='+JSON.stringify(result.rows);//[0]);
 			console.log(s); // outputs: { name: 'brianc' }
 			response.write(s);
-			// disconnect the client
 			client.end(function (err) 
 				{
+				console.log('client.end');
 				if (err){
 					console.log('err on end!!!');
 					response.end();
 					throw err;
 					}
+				response.end();
 				});
-			response.end();
 			});
 		});
 	//show groups...
