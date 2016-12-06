@@ -13,7 +13,6 @@ http.createServer(function(request, response)
 	//connect to db:	
 	client.on('drain', client.end.bind(client)); //disconnect client when all queries are finished
 	//show users....
-	//select username from users;
 	client.connect(function (err) 
 		{
 		if (err){
@@ -22,7 +21,7 @@ http.createServer(function(request, response)
 			throw err;
 			}
 			// disconnect the client
-		client.query('select username from users',[],//'SELECT $1::text as name', ['brianc'], 
+		client.query('select * from messages',[],//'SELECT $1::text as name', ['brianc'], 
 		function (err, result) 
 			{
 			if (err){
