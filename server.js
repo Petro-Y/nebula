@@ -2,17 +2,51 @@
 Серверна частина nebula
 */
 var http = require("http");
-var pg = require("pg");
+var pg = require("pg");           //postgres
+var cheerio = require('cheerio');//jQuery-like server-side library
 
+function placeOnPage($, itemclass, data)
+	{
+	//$=cheerio.load(template);
+	$(itemclass).addClass('blank');
+	var item=$.html(itemclass);
+	for (i in data)
+		{
+		var row=data[i];
+		for (j in row)
+			{
+			$(itemclass+' .'+j).text(row[j]||'');
+			}
+		$(itemclass+'.blank').addClass('done')
+		                 .removeClass('blank');
+		$(item).insertAfter(itemclass+'.done');
+		$(itemclass+'.done').removeClass('done');
+		}
+	$(itemclass+'.blank').remove();
+	//return $.html();
+	}
+var template='';//завантажити з messages.html
 http.createServer(function(request, response) 
 	{
 	response.writeHead(200, {"Content-Type": "text/html"});
+	var incomplete=1;
+	$=cheerio.load(template);
+	function finish()
+		{
+		incomplete--;
+		if(incomplete<=0)
+			{
+			//завершувальні дії...
+			response.end();
+			}
+		}
 	response.write("<title>Світ, якого не було...</title>");
 	response.write("<p>Lorem ipsum dolor sit amet...</p>");
 	var client = new pg.Client('postgres://postgres@localhost/nebula');
 	//connect to db:	
 	client.on('drain', client.end.bind(client)); //disconnect client when all queries are finished
 	//show users....
+	//show messages...
 	client.connect(function (err) 
 		{
 		if (err){
@@ -21,7 +55,8 @@ http.createServer(function(request, response)
 			throw err;
 			}
 			// disconnect the client
-		client.query('select * from messages',[],//'SELECT $1::text as name', ['brianc'], 
+		client.query("select username, groupname, title, content from messages natural join users natural join groups where commentto is null",[],
+		//'SELECT $1::text as name', ['brianc'], 
 		function (err, result) 
 			{
 			if (err){
@@ -33,7 +68,8 @@ http.createServer(function(request, response)
 			// just print the result to the console
 			s='result='+JSON.stringify(result.rows);//[0]);
 			console.log(s); // outputs: { name: 'brianc' }
-			response.write(s);
+			response.write(s); //тут буде placeOnPage()
+			
 			client.end(function (err) 
 				{
 				console.log('client.end');
@@ -47,8 +83,8 @@ http.createServer(function(request, response)
 			});
 		});
 	//show groups...
-	//show messages...
 	//response.end();
+	finish();
 	}).listen(8888);
 //========= show some json data ===============	
 	/*var cache = [];
