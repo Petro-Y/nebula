@@ -1,8 +1,9 @@
 /*
 Серверна частина nebula
 */
-var http = require("http");
-var pg = require("pg");           //postgres
+var http = require('http');
+var fs = require('fs');
+var pg = require('pg');           //postgres
 var cheerio = require('cheerio');//jQuery-like server-side library
 
 function placeOnPage($, itemclass, data)
@@ -15,7 +16,7 @@ function placeOnPage($, itemclass, data)
 		var row=data[i];
 		for (j in row)
 			{
-			$(itemclass+' .'+j).text(row[j]||'');
+			$(itemclass+'.blank .'+j).text(row[j]||'');
 			}
 		$(itemclass+'.blank').addClass('done')
 		                 .removeClass('blank');
@@ -25,28 +26,31 @@ function placeOnPage($, itemclass, data)
 	$(itemclass+'.blank').remove();
 	//return $.html();
 	}
-var template='';//завантажити з messages.html
+	
+var template = fs.readFileSync('messages.html', 'utf8');;//завантажити з messages.html
 http.createServer(function(request, response) 
 	{
 	response.writeHead(200, {"Content-Type": "text/html"});
-	var incomplete=1;
 	$=cheerio.load(template);
+	var incomplete=1;
 	function finish()
 		{
 		incomplete--;
 		if(incomplete<=0)
 			{
 			//завершувальні дії...
+			response.write($.html());
 			response.end();
 			}
 		}
-	response.write("<title>Світ, якого не було...</title>");
-	response.write("<p>Lorem ipsum dolor sit amet...</p>");
+	//response.write("<title>Світ, якого не було...</title>");
+	//response.write("<p>Lorem ipsum dolor sit amet...</p>");
 	var client = new pg.Client('postgres://postgres@localhost/nebula');
 	//connect to db:	
 	client.on('drain', client.end.bind(client)); //disconnect client when all queries are finished
 	//show users....
 	//show messages...
+	incomplete++;
 	client.connect(function (err) 
 		{
 		if (err){
@@ -68,8 +72,8 @@ http.createServer(function(request, response)
 			// just print the result to the console
 			s='result='+JSON.stringify(result.rows);//[0]);
 			console.log(s); // outputs: { name: 'brianc' }
-			response.write(s); //тут буде placeOnPage()
-			
+			//response.write(s);
+			placeOnPage($, '.message',result.rows);
 			client.end(function (err) 
 				{
 				console.log('client.end');
@@ -78,7 +82,8 @@ http.createServer(function(request, response)
 					response.end();
 					throw err;
 					}
-				response.end();
+				finish();
+				//response.end();
 				});
 			});
 		});
