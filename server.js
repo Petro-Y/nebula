@@ -36,6 +36,19 @@ http.createServer(function(request, response)
 	{
 	var pathname = url.parse(request.url).pathname;
 	response.writeHead(200, {"Content-Type": "text/html"});
+	if(pathname=='exit')//debug option
+		{
+		response.write('Exiting nebula... <a href="/?">(go top)</a><br>');
+		response.end();
+		process.exit(0);
+		}
+	else if(pathname=='messages'){}//......
+	else if(pathname=='login'){}//......
+	else if(pathname=='logout'){}//......
+	else if(pathname=='register'){}//......
+	else if(pathname=='newgroup'){}//......
+	else if(pathname=='newmessage'){}//......
+	//-------------------------------------------//
 	$=cheerio.load(template);
 	var incomplete=1;
 	function finish()
