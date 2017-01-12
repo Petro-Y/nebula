@@ -2,9 +2,11 @@
 Серверна частина nebula
 */
 var http = require('http');
+var url = require('url');
 var fs = require('fs');
 var pg = require('pg');           //postgres
 var cheerio = require('cheerio');//jQuery-like server-side library
+//var NodeSession = require('node-session');
 
 function placeOnPage($, itemclass, data)
 	{
@@ -28,8 +30,11 @@ function placeOnPage($, itemclass, data)
 	}
 	
 var template = fs.readFileSync('messages.html', 'utf8');;//завантажити з messages.html
+
+
 http.createServer(function(request, response) 
 	{
+	var pathname = url.parse(request.url).pathname;
 	response.writeHead(200, {"Content-Type": "text/html"});
 	$=cheerio.load(template);
 	var incomplete=1;
@@ -43,13 +48,13 @@ http.createServer(function(request, response)
 			response.end();
 			}
 		}
-	//response.write("<title>Світ, якого не було...</title>");
-	//response.write("<p>Lorem ipsum dolor sit amet...</p>");
 	var client = new pg.Client('postgres://postgres@localhost/nebula');
 	//connect to db:	
 	client.on('drain', client.end.bind(client)); //disconnect client when all queries are finished
+	
+	
 	//show users....
-	//show messages...
+	//show messages:
 	incomplete++;
 	client.connect(function (err) 
 		{
