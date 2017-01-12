@@ -1,9 +1,11 @@
 :loop
 	::update from github:
 	echo update: %date% %time%>>server.log
-	git pull --rebase
+	::git pull --rebase
 	::або git pull
 	::або git checkout
+	git fetch --all
+	git merge FETCH_HEAD
 :runserver
 	echo run server: %date% %time%>>server.log
 	node server.js>>server.log
