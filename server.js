@@ -28,28 +28,12 @@ function placeOnPage($, itemclass, data)
 	$(itemclass+'.blank').remove();
 	//return $.html();
 	}
-	
-var template = fs.readFileSync('messages.html', 'utf8');;//завантажити з messages.html
+var templates={};	
+templates['messages'] = fs.readFileSync('messages.html', 'utf8');;//завантажити з messages.html
 
 
 http.createServer(function(request, response) 
 	{
-	var pathname = url.parse(request.url).pathname;
-	response.writeHead(200, {"Content-Type": "text/html"});
-	if(pathname=='exit')//debug option
-		{
-		response.write('Exiting nebula... <a href="/?">(go top)</a><br>');
-		response.end();
-		process.exit(0);
-		}
-	else if(pathname=='messages'){}//......
-	else if(pathname=='login'){}//......
-	else if(pathname=='logout'){}//......
-	else if(pathname=='register'){}//......
-	else if(pathname=='newgroup'){}//......
-	else if(pathname=='newmessage'){}//......
-	//-------------------------------------------//
-	$=cheerio.load(template);
 	var incomplete=1;
 	function finish()
 		{
@@ -61,50 +45,83 @@ http.createServer(function(request, response)
 			response.end();
 			}
 		}
-	var client = new pg.Client('postgres://postgres@localhost/nebula');
-	//connect to db:	
-	client.on('drain', client.end.bind(client)); //disconnect client when all queries are finished
+	var pathname = url.parse(request.url).pathname;
+	var template=temlates[pathname];
+	if(template)
+		$=cheerio.load(template);	
+	response.writeHead(200, {"Content-Type": "text/html"});
+	if(pathname=='exit')//debug option
+		{
+		response.write('Exiting nebula... <a href="/?">(go top)</a><br>');
+		response.end();
+		process.exit(0);
+		}
+	else if(pathname==''){}//головна сторінка: найновіші повідомлення та ін. ......
+	else if(pathname=='messages')
+		{
+		dbrequest="select username, groupname, title, content from messages natural join users natural join groups where commentto is null";
+		dbargs=[];		
+		showdata(dbrequest, dbargs, $, finish);
+		}
+	else if(pathname=='login'){}//......
+	else if(pathname=='logout'){}//......
+	else if(pathname=='register'){}//......
+	else if(pathname=='newgroup'){}//......
+	else if(pathname=='newmessage'){}//......
+	else if(pathname=='mymessages'){}//......
+	else if(pathname=='mygroups'){}//......
+	else if(pathname=='group'){}//......
+	else if(pathname=='thread'){}//message with comments......
+	else if(pathname=='user'){}//......
+	else if(pathname=='settings'){}//......
+	//-------------------------------------------//
 	
 	
 	//show users....
 	//show messages:
-	incomplete++;
-	client.connect(function (err) 
+	function showdata(dbrequest, dbargs, $, finish)
 		{
-		if (err){
-			console.log('err on connect!!!');
-			response.write('<br><hr>err on connect!!!');
-			throw err;
-			}
-			// disconnect the client
-		client.query("select username, groupname, title, content from messages natural join users natural join groups where commentto is null",[],
-		//'SELECT $1::text as name', ['brianc'], 
-		function (err, result) 
+		var client = new pg.Client('postgres://postgres@localhost/nebula');
+		//connect to db:	
+		client.on('drain', client.end.bind(client)); //disconnect client when all queries are finished
+		incomplete++;
+		client.connect(function (err) 
 			{
 			if (err){
-				console.log('err on query!!!');
-				response.write('<br><hr>err on query!!!');
-				response.end();
+				console.log('err on connect!!!');
+				response.write('<br><hr>err on connect!!!');
 				throw err;
 				}
-			// just print the result to the console
-			s='result='+JSON.stringify(result.rows);//[0]);
-			console.log(s); // outputs: { name: 'brianc' }
-			//response.write(s);
-			placeOnPage($, '.message',result.rows);
-			client.end(function (err) 
+				// disconnect the client
+			client.query(dbrequest, dbargs,
+			//'SELECT $1::text as name', ['brianc'], 
+			function (err, result) 
 				{
-				console.log('client.end');
 				if (err){
-					console.log('err on end!!!');
+					console.log('err on query!!!');
+					response.write('<br><hr>err on query!!!');
 					response.end();
 					throw err;
 					}
-				finish();
-				//response.end();
+				// just print the result to the console
+				s='result='+JSON.stringify(result.rows);//[0]);
+				console.log(s); // outputs: { name: 'brianc' }
+				//response.write(s);
+				placeOnPage($, '.message',result.rows);
+				client.end(function (err) 
+					{
+					console.log('client.end');
+					if (err){
+						console.log('err on end!!!');
+						response.end();
+						throw err;
+						}
+					finish();
+					//response.end();
+					});
 				});
 			});
-		});
+		}
 	//show groups...
 	//response.end();
 	finish();
